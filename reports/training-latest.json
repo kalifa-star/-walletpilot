@@ -1,0 +1,196 @@
+{
+  "id": "dde91db31162002abc40837a49e776843ad024f89659989d9501fa4cac73cb0b",
+  "trainedAt": "2026-10-20T02:20:03.213Z",
+  "capital": 12.4375,
+  "allocationNGN": 20000,
+  "config": {
+    "maxPositionPct": 0.4,
+    "riskPerTradePct": 0.01,
+    "maxDrawdownPct": 0.05,
+    "dailyLossPct": 0.02,
+    "stopATR": 2,
+    "takeProfitR": 2,
+    "maxOrdersPerDay": 10,
+    "spread": 0.0001,
+    "slippage": 0.00002,
+    "fee": 0.01
+  },
+  "source": {
+    "key": "frankfurter:reference:1day:EURUSD",
+    "name": "Frankfurter / ECB",
+    "provider": "frankfurter",
+    "kind": "reference",
+    "interval": "1day",
+    "sourceUrl": "https://api.frankfurter.dev/v2/rates?base=EUR&quotes=USD&providers=ecb&from=2025-04-18&to=2026-10-19"
+  },
+  "dataFrom": "2025-04-17T00:00:00.000Z",
+  "dataThrough": "2026-10-19T00:00:00.000Z",
+  "trainedThrough": "2026-03-12T00:00:00.000Z",
+  "selectionThrough": "2026-07-02T00:00:00.000Z",
+  "threshold": 0.7,
+  "target": "Positive net hypothetical long trade: next observation open to fifth observation close; fixed maximum-position notional, assumed round-trip costs. Actual risk-managed executions can differ.",
+  "metrics": {
+    "train": {
+      "samples": 205,
+      "positiveRate": 0.33658536585365856,
+      "brier": 0.21199829093933448,
+      "baselineBrier": 0.22329565734681733,
+      "logLoss": 0.6141657123749534,
+      "accuracy": 0.6878048780487804,
+      "baselineAccuracy": 0.6634146341463415
+    },
+    "validation": {
+      "samples": 72,
+      "positiveRate": 0.2916666666666667,
+      "brier": 0.19543241161538047,
+      "baselineBrier": 0.2086149117588736,
+      "logLoss": 0.5777552750212277,
+      "accuracy": 0.75,
+      "baselineAccuracy": 0.7083333333333334
+    },
+    "test": {
+      "samples": 72,
+      "positiveRate": 0.18055555555555555,
+      "brier": 0.17869272682793272,
+      "baselineBrier": 0.1723005486152421,
+      "logLoss": 0.5415065634612334,
+      "accuracy": 0.7638888888888888,
+      "baselineAccuracy": 0.8194444444444444
+    }
+  },
+  "sampleAudit": {
+    "trainFirst": "2025-05-20T00:00:00.000Z",
+    "trainLast": "2026-03-05T00:00:00.000Z",
+    "trainLabelThrough": "2026-03-12T00:00:00.000Z",
+    "validationFirst": "2026-03-13T00:00:00.000Z",
+    "validationLast": "2026-06-25T00:00:00.000Z",
+    "validationLabelThrough": "2026-07-02T00:00:00.000Z",
+    "testFirst": "2026-07-03T00:00:00.000Z",
+    "testLast": "2026-10-12T00:00:00.000Z",
+    "testLabelThrough": "2026-10-19T00:00:00.000Z"
+  },
+  "gate": {
+    "passed": false,
+    "checks": [
+      {
+        "key": "positiveReturn",
+        "passed": false,
+        "description": "Test net return must exceed zero-interest cash."
+      },
+      {
+        "key": "beatsRules",
+        "passed": true,
+        "description": "Test return must exceed the fixed-rule baseline."
+      },
+      {
+        "key": "minimumTrades",
+        "passed": false,
+        "description": "At least five closed test trades are required."
+      },
+      {
+        "key": "drawdown",
+        "passed": true,
+        "description": "Test drawdown must remain below the configured account stop."
+      },
+      {
+        "key": "predictionSkill",
+        "passed": false,
+        "description": "Test Brier score must beat the training-prevalence predictor."
+      }
+    ],
+    "note": "Screening gate for experimental paper deployment only. One historical test does not establish profitability. Repeated inspection or retraining can overfit this test period."
+  },
+  "split": {
+    "trainEnd": 230,
+    "validationEnd": 307,
+    "total": 384
+  },
+  "thresholdTrials": [
+    {
+      "threshold": 0.55,
+      "returnPct": -0.1620238490858461,
+      "closedTrades": 2
+    },
+    {
+      "threshold": 0.6,
+      "returnPct": 0,
+      "closedTrades": 0
+    },
+    {
+      "threshold": 0.65,
+      "returnPct": 0,
+      "closedTrades": 0
+    },
+    {
+      "threshold": 0.7,
+      "returnPct": 0,
+      "closedTrades": 0
+    }
+  ],
+  "evaluation": {
+    "initial": 12.4375,
+    "equity": 12.4375,
+    "netPnl": 0,
+    "returnPct": 0,
+    "maxDrawdown": 0,
+    "closedTrades": 0,
+    "winRate": null,
+    "fees": 0,
+    "from": "2026-07-03T00:00:00.000Z",
+    "to": "2026-10-19T00:00:00.000Z",
+    "observations": 77,
+    "buyHoldPct": -2.1192759679150797
+  },
+  "rulesBaseline": {
+    "initial": 12.4375,
+    "equity": 12.315900521167439,
+    "netPnl": -0.12159947883256095,
+    "returnPct": -0.9776842519200857,
+    "maxDrawdown": 0.010477288448790641,
+    "closedTrades": 5,
+    "winRate": 20,
+    "fees": 0.09999999999999999,
+    "from": "2026-07-03T00:00:00.000Z",
+    "to": "2026-10-19T00:00:00.000Z",
+    "observations": 77,
+    "buyHoldPct": -2.1192759679150797
+  },
+  "shadow": {
+    "predictions": 0,
+    "resolved": 0,
+    "latest": null,
+    "brier": null,
+    "baselineBrier": null,
+    "note": "Only the latest newly archived observation is predicted, before its target outcome enters the archive. No prediction backfill. Historical imports/extensions are research, not live forward evidence. Prediction error is not trading return."
+  },
+  "featureWeights": [
+    {
+      "name": "return1",
+      "weight": 0.02743355680887009
+    },
+    {
+      "name": "return5",
+      "weight": -0.3439310090444992
+    },
+    {
+      "name": "return20",
+      "weight": -0.12085497919792129
+    },
+    {
+      "name": "trend",
+      "weight": 0.10206866137801049
+    },
+    {
+      "name": "rsi",
+      "weight": 0.03587465734720688
+    },
+    {
+      "name": "atrPct",
+      "weight": 0.3687684323289833
+    },
+    {
+      "name": "volatility",
+      "weight": -0.14779973361200163
+    }
+  ]
+}
