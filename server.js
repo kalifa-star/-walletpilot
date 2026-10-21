@@ -14,21 +14,25 @@ const assets = new Map([
   ...['style.css','bot.css','learning.css','opay.css','app.js','bot.js','opay.js','engine.js'].map(name => [`/src/${name}`, [`src/${name}`, name.endsWith('.css') ? 'text/css' : 'text/javascript']]),
 ]);
 const json = (res, code, data) => res.writeHead(code,{ 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options':'nosniff' }).end(JSON.stringify(data));
-export function createHandler(service,integration=new OPayIntegration({file:null})) {
+export function createHandler(service,integration=new OPayIntegration({file:null}),{ publicOrigin = process.env.PUBLIC_ORIGIN || process.env.RENDER_EXTERNAL_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : null) } = {}) {
+  const hostedOrigin = publicOrigin ? new URL(publicOrigin).origin : null;
   return async (req,res) => {
     try {
       const host = req.headers.host;
       const path = new URL(req.url,'http://localhost').pathname;
+      if (path === '/health' && req.method === 'GET') return json(res,200,{ok:true});
       const localHost=!!host&&/^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
+      const hostedHost=!!hostedOrigin&&host===new URL(hostedOrigin).host;
       const callbackHost=integration.adapter.config.callbackUrl?new URL(integration.adapter.config.callbackUrl).host:null;
       const callback=path==='/api/opay/callback';
-      if (!localHost&&!(callback&&callbackHost&&host===callbackHost)) return json(res,403,{ error: 'Use the local localhost address.' });
+      if (!localHost&&!hostedHost&&!(callback&&callbackHost&&host===callbackHost)) return json(res,403,{ error: 'Unrecognized host.' });
       if (path === '/api/status' && req.method === 'GET') return json(res,200,await service.run('status'));
       if(path==='/api/opay/status'&&req.method==='GET')return json(res,200,await integration.run('status'));
       if (path.startsWith('/api/')) {
         const opayRoutes={'/api/opay/payments/create':'create','/api/opay/payments/query':'query','/api/opay/payments/simulate':'simulate','/api/opay/callback':'callback'};
         if (req.method !== 'POST' || (!routes[path]&&!opayRoutes[path])) return json(res,404,{ error: 'Unknown API route.' });
-        if (!callback&&req.headers.origin && req.headers.origin !== `http://${host}`) return json(res,403,{ error:'Cross-origin commands are blocked.' });
+        const expectedOrigin=hostedHost?hostedOrigin:`http://${host}`;
+        if (!callback&&req.headers.origin && req.headers.origin !== expectedOrigin) return json(res,403,{ error:'Cross-origin commands are blocked.' });
         if (!req.headers['content-type']?.startsWith('application/json')) return json(res,415,{ error:'Use application/json.' });
         let body = '';
         for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 1000000) return json(res,413,{ error:'Request body too large.' }); }
@@ -58,7 +62,8 @@ export async function startServer() {
   },1000);
   timer.unref(); server.on('close',() => clearInterval(timer));
   server.on('error', error => { clearInterval(timer); console.error(`Cannot start local server: ${error.message}`); process.exitCode = 1; });
-  server.listen(Number(process.env.PORT || 3000),'127.0.0.1',() => console.log(`WalletPilot bot: http://localhost:${process.env.PORT || 3000}`));
+  const bindHost=process.env.HOST || (process.env.RAILWAY_ENVIRONMENT_ID || process.env.RENDER==='true'?'0.0.0.0':'127.0.0.1');
+  server.listen(Number(process.env.PORT || 3000),bindHost,() => console.log(`WalletPilot bot listening on ${bindHost}:${process.env.PORT || 3000}`));
   return server;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await startServer();

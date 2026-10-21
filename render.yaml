@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: walletpilot
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPAY_MODE
+        value: mock
+      - key: AI_REVIEW_ENABLED
+        value: "false"

@@ -252,3 +252,15 @@ test('API enforces local host/origin and does not expose backend or environment 
   for(const path of ['/','/src/bot.js','/src/bot.css','/demo.html'])assert.equal((await api(handler,path)).code,200);
   assert.equal((await api(handler,'/api/allocate',{method:'POST',data:{amount:20000,mode:'replay',consent:true}})).code,200);
 });
+test('Railway HTTPS commands accept only the configured domain and origin',async()=>{
+  const s=await service(),handler=createHandler(s,undefined,{publicOrigin:'https://walletpilot.up.railway.app'});
+  const headers={host:'walletpilot.up.railway.app',origin:'https://walletpilot.up.railway.app'};
+  assert.equal((await api(handler,'/api/status',{headers})).code,200);
+  assert.equal((await api(handler,'/api/reset',{method:'POST',data:{},headers})).code,200);
+  for(const origin of ['https://attacker.example','http://walletpilot.up.railway.app']){
+    assert.equal((await api(handler,'/api/reset',{method:'POST',data:{},headers:{...headers,origin}})).code,403);
+  }
+  assert.equal((await api(handler,'/api/status',{headers:{host:'attacker.example'}})).code,403);
+  assert.equal((await api(handler,'/health',{headers:{host:'healthcheck.railway.app'}})).code,200);
+  assert.equal((await api(handler,'/.runtime/walletpilot.json',{headers})).code,404);
+});

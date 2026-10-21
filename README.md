@@ -14,6 +14,40 @@ npm run dev
 
 Open **http://localhost:3000**. Restart a previously running version of the server to load the new API routes. The server listens on loopback only; use the local URL. It is a single local paper account shared across browser tabs, not a hosted multi-user banking service.
 
+## Render deployment (free demo)
+
+The included `render.yaml` selects only a Free Docker web service, with mock
+payments and paid AI review disabled. No paid disk or database is configured.
+The server automatically accepts the HTTPS URL in `RENDER_EXTERNAL_URL`.
+Connect this repository on Render and deploy using its Blueprint, or create a
+Free Docker web service with healthcheck path `/health`.
+
+Render Free sleeps after 15 minutes without traffic. Local account state,
+archives, models, and payment-test records are lost on sleep, restart, or
+redeploy. The bot and observer stop while asleep. This deployment is a shared
+public demo without authentication; do not configure merchant credentials or
+store private data in it. Keep the service on Free and do not add paid resources.
+
+## Railway deployment
+
+The included Dockerfile runs Node.js 22 and binds to `0.0.0.0` using Railway's `PORT`.
+Create a Railway service from this repository, generate a public domain, and
+attach a persistent volume mounted at `/app/.runtime`. Keep one replica because
+state is stored in local JSON files. Set the healthcheck path to `/health`.
+The app accepts the HTTPS origin from `RAILWAY_PUBLIC_DOMAIN`; for a custom
+domain, set `PUBLIC_ORIGIN=https://your-domain.example`.
+
+Leave `OPAY_MODE=mock` and `AI_REVIEW_ENABLED=false` for the default demo.
+No credentials are required for those modes. Runtime files and `.env` files
+are excluded from the image, so deployment starts with a fresh paper account.
+The hosted app shares one paper account across visitors and has no login;
+anyone with its URL can change that demo account. Do not add payment credentials
+or private account data to a public demo.
+
+Railway's Free plan is usage-limited rather than unlimited always-on hosting.
+Use the Free plan without upgrading; monitor available credits. Sleeping or
+stopped services cannot continuously collect market data or run the bot.
+
 ## OPay-targeted integration
 
 Open **http://localhost:3000/opay** for the new wallet host concept, embedded trading experience, and payment-integration lab. OPay is now the selected target; this remains an independent concept outside the real OPay app.
